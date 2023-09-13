@@ -39,6 +39,8 @@ const App: React.FC = () => {
 						const heightRegionSize = Math.round(
 							0.7 * Math.min(v.videoWidth, v.videoHeight)
 						);
+						//region size determines the size of
+						//the border within the camera
 						const widthRegionSize = Math.round(0.4 * v.videoWidth);
 
 						const region: QrScanner.ScanRegion = {

@@ -20,6 +20,7 @@ app.use(
 	})
 );
 
+//instantiate pool to establish connection to postgresql database
 const qrDb = new Pool.Pool({
 	user: "postgres",
 	host: "localhost",
