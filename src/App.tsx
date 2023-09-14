@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import QrScanner from "qr-scanner";
 import bscs from "../data/bscs.json";
 import bsit from "../data/bsit.json";
 import bsis from "../data/bsis.json";
-import axios from "axios";
-
-import QrScanner from "qr-scanner";
 
 type Student = {
 	studentNo: string;
@@ -19,76 +17,60 @@ const App: React.FC = () => {
 	useEffect(() => {
 		let qrScanner: QrScanner;
 
-		QrScanner.hasCamera().then(() => {
-			if (!videoRef.current) return;
-
-			qrScanner = new QrScanner(
-				videoRef.current,
-				(result: QrScanner.ScanResult) => {
-					if (result) {
-						setStudentId(result.data);
-					}
-				},
-				{
-					returnDetailedScanResult: true,
-					preferredCamera: 1,
-					highlightScanRegion: true,
-					maxScansPerSecond: 3,
-					singleChannel: false,
-					calculateScanRegion: (v: HTMLVideoElement) => {
-						const heightRegionSize = Math.round(
-							0.7 * Math.min(v.videoWidth, v.videoHeight)
-						);
-						//region size determines the size of
-						//the border within the camera
-						const widthRegionSize = Math.round(0.4 * v.videoWidth);
-
-						const region: QrScanner.ScanRegion = {
-							x: Math.round((v.videoWidth - widthRegionSize) / 2),
-							y: Math.round((v.videoHeight - heightRegionSize) / 2),
-							width: widthRegionSize,
-							height: heightRegionSize,
-						};
-
-						return region;
-					},
+		const initializeScanner = async () => {
+			try {
+				await QrScanner.hasCamera();
+				if (videoRef.current) {
+					qrScanner = new QrScanner(videoRef.current, handleScanResult, {
+						returnDetailedScanResult: true,
+						preferredCamera: 1,
+						highlightScanRegion: true,
+						maxScansPerSecond: 3,
+						singleChannel: false,
+						calculateScanRegion: (v: HTMLVideoElement) => {
+							const heightRegionSize = Math.round(
+								0.7 * Math.min(v.videoWidth, v.videoHeight)
+							);
+							const widthRegionSize = Math.round(0.4 * v.videoWidth);
+							const region: QrScanner.ScanRegion = {
+								x: Math.round((v.videoWidth - widthRegionSize) / 2),
+								y: Math.round((v.videoHeight - heightRegionSize) / 2),
+								width: widthRegionSize,
+								height: heightRegionSize,
+							};
+							return region;
+						},
+					});
+					qrScanner.start();
 				}
-			);
-
-			qrScanner.start();
+			} catch (error) {
+				console.error("Error initializing scanner:", error);
+			}
 
 			return () => {
 				if (qrScanner) qrScanner.destroy();
 			};
-		});
+		};
+
+		initializeScanner();
 	}, []);
 
-	// const persistStudentInfo = useCallback(async (studentInfo: string) => {
-	// 	await fetch("https://localhost:3001/", {
-	// 		method: "POST",
-	// 		body: JSON.stringify({ studentInfo }),
-	// 	}).then((res) => {
-	// 		console.log(res);
-	// 	});
-	// });
+	const handleScanResult = (result: QrScanner.ScanResult) => {
+		if (result) {
+			setStudentId(result.data);
+		}
+	};
 
-	const filterStudent = () => {
-		const bscsStudent = bscs.find(
-			(student: Student) => student.studentNo === studentId
-		);
-		const bsitStudent = bsit.find(
-			(student: Student) => student.studentNo === studentId
-		);
-		const bsisStudent = bsis.find(
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	const filterStudent = async () => {
+		const students = [...bscs, ...bsit, ...bsis];
+
+		const foundStudent = students.find(
 			(student: Student) => student.studentNo === studentId
 		);
 
-		if (bscsStudent) {
-			setStudentInfo(bscsStudent.name);
-		} else if (bsitStudent) {
-			setStudentInfo(bsitStudent.name);
-		} else if (bsisStudent) {
-			setStudentInfo(bsisStudent.name);
+		if (foundStudent) {
+			setStudentInfo(foundStudent.name);
 		} else {
 			setStudentInfo("Student not found");
 		}
@@ -96,7 +78,6 @@ const App: React.FC = () => {
 
 	const persistInfo = useCallback(
 		async (studentId: string, studentInfo: string) => {
-			console.log;
 			try {
 				const response = await fetch("http://localhost:3000/api/persist", {
 					method: "POST",
@@ -111,22 +92,19 @@ const App: React.FC = () => {
 				const data = await response.json();
 				alert(data.message);
 			} catch (error) {
-				console.error(error);
+				console.error("Error while persisting info:", error);
 			}
 		},
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 		[studentId, studentInfo]
 	);
 
 	useEffect(() => {
-		//search to all json
-
-		//if found, display the name of the student
-
-		//if not found, display "Student not found"
-		filterStudent();
-
-		persistInfo(studentId!, studentInfo!);
-	}, [studentId, studentInfo]);
+		if (studentId && studentInfo) {
+			filterStudent();
+			persistInfo(studentId, studentInfo);
+		}
+	}, [studentId, studentInfo, filterStudent, persistInfo]);
 
 	return (
 		<div>

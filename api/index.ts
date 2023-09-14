@@ -40,16 +40,13 @@ app.post("/api/persist", async (req: Request, res: Response) => {
 		);
 
 		if (findStudent.rows.length > 0) {
-			const ifExist = findStudent.rows.find(
-				(student) => student.stud_id === stud_id
-			);
-
-			if (ifExist) {
-				return res.status(400).json({
-					message: "Student already exist",
-					student: ifExist,
-				});
-			}
+			findStudent.rows.find((student) => {
+				if (student.stud_id === stud_id) {
+					return res
+						.status(400)
+						.json({ message: "Student already exists", student });
+				}
+			});
 		}
 
 		const newStudent = await qrDb.query(
