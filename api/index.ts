@@ -60,6 +60,7 @@ app.post("/api/persist", async (req: Request, res: Response) => {
 	} catch (err) {
 		res.status(500).json({ err, message: "Something went wrong" });
 	}
+	3;
 });
 
 app.listen(3000, () => console.log(`Server is running on port 3000`));

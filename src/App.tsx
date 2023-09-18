@@ -70,6 +70,7 @@ const App: React.FC = () => {
 		);
 
 		if (foundStudent) {
+			console.log(foundStudent);
 			setStudentInfo(foundStudent.name);
 		} else {
 			setStudentInfo("Student not found");
@@ -108,12 +109,14 @@ const App: React.FC = () => {
 
 	return (
 		<div>
-			<h1 className='font-bold'>QR Scanner Implementation</h1>
-			<video ref={videoRef}></video>
-			<h1 className='font-bold text-2xl'>
-				Student Id: {studentId ? studentId : "Scanning..."}
-			</h1>
-			<h1>Student Name: {studentInfo}</h1>
+			<div className='grid grid-cols-1 place-items-center mt-28'>
+				<h1 className='font-bold'>QR Scanner Implementation</h1>
+				<video ref={videoRef}></video>
+				<h1 className='font-bold text-2xl'>
+					Student Id: {studentId ? studentId : "Scanning..."}
+				</h1>
+				<h1>Student Name: {studentInfo}</h1>
+			</div>
 		</div>
 	);
 };
