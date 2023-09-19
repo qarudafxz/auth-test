@@ -4,10 +4,10 @@ import bscs from "../data/bscs.json";
 import bsit from "../data/bsit.json";
 import bsis from "../data/bsis.json";
 
-type Student = {
-	studentNo: string;
-	name: string;
-};
+// type Student = {
+// 	studentNo: string;
+// 	name: string;
+// };
 
 const App: React.FC = () => {
 	const videoRef = useRef<HTMLVideoElement>(null);
@@ -63,18 +63,15 @@ const App: React.FC = () => {
 
 	// eslint-disable-next-line react-hooks/exhaustive-deps
 	const filterStudent = async () => {
-		const students = [...bscs, ...bsit, ...bsis];
+		const students = [...bscs, ...bsis, ...bsit];
 
-		const foundStudent = students.find(
-			(student: Student) => student.studentNo === studentId
-		);
-
-		if (foundStudent) {
-			console.log(foundStudent);
-			setStudentInfo(foundStudent.name);
-		} else {
-			setStudentInfo("Student not found");
-		}
+		//find the student based by the variable state studentId
+		students.forEach((student) => {
+			if (student.studentNo === studentId) {
+				console.log("Student found: ", student.name);
+				setStudentInfo(student.name);
+			}
+		});
 	};
 
 	const persistInfo = useCallback(
@@ -101,11 +98,9 @@ const App: React.FC = () => {
 	);
 
 	useEffect(() => {
-		if (studentId && studentInfo) {
-			filterStudent();
-			persistInfo(studentId, studentInfo);
-		}
-	}, [studentId, studentInfo, filterStudent, persistInfo]);
+		if (studentId) filterStudent();
+		if (studentId && studentInfo) persistInfo(studentId, studentInfo);
+	}, [studentId, studentInfo]);
 
 	return (
 		<div>
